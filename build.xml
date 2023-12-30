@@ -1,0 +1,68 @@
+<project name="MergeUpperHalves" default="build" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir" value="${build.dir}/jar"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="jar.file" value="${jar.dir}/MergeUpperHalves.jar"/>
+    <property name="ivy.dir" value="${lib.dir}/ivy"/>
+    <property name="ivy.jar.file" value="${ivy.dir}/ivy.jar"/>
+
+    <!-- Check if Ivy is installed -->
+    <available classname="org.apache.ivy.Main" property="ivy.installed" classpath="${ivy.jar.file}"/>
+
+    <target name="install-ivy" description="Install Ivy" unless="ivy.installed">
+        <mkdir dir="${ivy.dir}"/>
+        <get dest="${ivy.jar.file}" src="https://repo1.maven.org/maven2/org/apache/ivy/ivy/2.5.0/ivy-2.5.0.jar"/>
+    </target>
+
+    <target name="init-ivy" depends="install-ivy" description="Initialize Ivy">
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.jar.file}"/>
+    </target>
+
+	<target name="resolve" depends="init-ivy" description="Resolve dependencies">
+		<ivy:resolve file="ivy.xml"/>
+		<ivy:cachepath pathid="lib.path" conf="default"/>
+	</target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+	<target name="compile" depends="resolve">
+		<mkdir dir="${classes.dir}"/>
+		<javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false" classpathref="lib.path"/>
+	</target>
+
+	<target name="copy-dependencies" depends="resolve">
+		<mkdir dir="${build.dir}/lib"/>
+		<ivy:retrieve pattern="${build.dir}/lib/[artifact]-[revision](-[classifier]).[ext]" conf="default"/>
+	</target>
+
+	<target name="unpack-dependencies" depends="copy-dependencies">
+		<mkdir dir="${build.dir}/temp"/>
+		<unzip dest="${build.dir}/temp">
+			<fileset dir="${build.dir}/lib" includes="*.jar"/>
+			<patternset>
+				<exclude name="META-INF/*.DSA"/>
+				<exclude name="META-INF/*.RSA"/>
+				<exclude name="META-INF/*.SF"/>
+				<!-- Exclude any other files in META-INF you don't want -->
+			</patternset>
+		</unzip>
+	</target>
+
+	<target name="jar" depends="compile, unpack-dependencies">
+		<mkdir dir="${jar.dir}"/>
+		<jar destfile="${jar.file}" basedir="${classes.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="st0gr.pdf.MergeUpperHalves"/>
+			</manifest>
+			<fileset dir="${build.dir}/temp"/>
+		</jar>
+	</target>
+
+    <target name="build" depends="clean, jar"/>
+
+</project>

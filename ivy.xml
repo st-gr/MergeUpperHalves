@@ -1,0 +1,12 @@
+<ivy-module version="2.0">
+    <info organisation="org.example" module="MergeUpperHalves"/>
+    <dependencies>
+        <!-- Apache PDFBox -->
+        <dependency org="org.apache.pdfbox" name="pdfbox" rev="2.0.30"/>
+        <dependency org="org.apache.pdfbox" name="fontbox" rev="2.0.30"/>
+
+        <!-- Apache Commons Logging -->
+        <!-- Specify the artifact details for commons-logging -->
+		<dependency org="commons-logging" name="commons-logging" rev="1.1.2" />
+    </dependencies>
+</ivy-module>
